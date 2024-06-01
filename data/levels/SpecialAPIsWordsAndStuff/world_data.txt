@@ -1,9 +1,0 @@
-[general]
-author=blokos
-name=specialapi words
-mods=1
-
-[levels]
-levelid=3
-rolling_levelid=3
-

@@ -1,9 +1,0 @@
-[general]
-name=lockpickmod
-author=blokos
-mods=1
-
-[levels]
-levelid=1
-rolling_levelid=1
-
