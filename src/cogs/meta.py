@@ -186,7 +186,7 @@ _@gabeyk9_ - helped a lot
         )
         embed.add_field(
             name="Links",
-            value="""[the offset server](https://discord.gg/cbUMDFnGWb)\n[the robot is chill server](https://discord.gg/ktk8XkAfGD)""",
+            value="""[offset server](https://discord.gg/cbUMDFnGWb)\n[robot is chill server](https://discord.gg/ktk8XkAfGD)\n[source code](https://github.com/blokos0/offsetbot)""",
             inline=True
         )
         await ctx.send(embed=embed)
