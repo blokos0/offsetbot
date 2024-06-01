@@ -24,7 +24,8 @@ from .. import constants
 from ..tile import Tile
 from ..types import Bot, Context, Variant, Color
 from ..utils import ButtonPages
-
+import random
+from datetime import datetime
 
 class SearchPageSource(menus.ListPageSource):
     def __init__(self, data: Sequence[Any], query: str):
@@ -44,8 +45,7 @@ class SearchPageSource(menus.ListPageSource):
                 lines.append(
                     f"({type}) {short} sprite: {long.sprite} source: {long.source}\n")
                 lines.append(
-                    f"    color: {long.inactive_color}, active color: {long.active_color} tiling: {long.tiling}\n")
-                lines.append(f"    tags: {', '.join(long.tags)}")
+                    f"    tiling: {long.tiling}")
             elif isinstance(long, LevelData):
                 lines.append(f"({type}) {short} {long.display()}")
             elif isinstance(long, CustomLevelData):
@@ -147,7 +147,7 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
     async def search(self, ctx: Context, *, query: str = ""):
         """Searches through bot data based on a query.
 
-        This can return tiles, levels, palettes, variants, and sprite mods.
+        This can return tiles, backgrounds, palettes, variants, sprite mods and backgrounds.
 
         **Tiles** can be filtered with the flags:
         * `sprite`: Will return only tiles that use that sprite.
@@ -165,7 +165,7 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
         * `author`: For custom levels, filters by the author.
 
         You can also filter by the result type:
-        * `type`: What results to return. This can be `tile`, `level`, `palette`, `variant`, `world`, or `mod`.
+        * `type`: What results to return. This can be `tile`, `level`, `palette`, `variant`, `world`, `mod` or `background`
 
         **Example commands:**
         `search baba`
@@ -256,6 +256,17 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
             for row in rows:
                 results["tile", row["name"]] = TileData.from_row(row)
                 results["blank_space", row["name"]] = None
+
+        if flags.get("type") is None and plain_query or flags.get(
+                "type") == "background":
+            q = f"*{plain_query}*.png" if plain_query else "*.png"
+            out = []
+            for path in Path("data/backgrounds").glob(q):
+                out.append(
+                    (("background", path.parts[-1][:-4]), path.parts[-1][:-4]))
+            out.sort()
+            for a, b in out:
+                results[a] = b
 
         if flags.get("type") is None or flags.get("type") == "level":
             if flags.get("custom") is None or flags.get("custom") == "true":
@@ -375,7 +386,7 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
             try:
                 sprite_name, source, colorx, colory, tiling = tuple(await result.fetchone())
             except BaseException:
-                return await ctx.error(f'Tile `{name.replace("`", "")[:16]}` not found!')
+                return await ctx.error(f'Tile {name} not found!')
             files = glob.glob(f'data/sprites/{source}/{sprite_name}_*.png')
             zipped_files = BytesIO()
             with zipfile.ZipFile(zipped_files, "x") as zip_file:
@@ -418,7 +429,9 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
         img = p_cache.get(palette, None)
         if img is None:
             if "/" not in palette:
-                return await ctx.error(f'The palette `{palette.replace("`", "")[:16]}` could not be found.')
+                user = await ctx.bot.fetch_user(ctx.author.id)
+                errormess = [f'{palette}', f'{palette} has been OFFSETGUYED.', f'Are you {palette}? If not, please form ALL FEELING YOU IS {palette}', f'{palette}{palette}{palette}{palette}{palette}', f'{palette} is an OFFSET spoiler, and thus cannot be shown.', f'{palette} is not real.', f'{palette} IS NOT {palette}.', f'get {palette}\'d lmao!', f'sorry, i ate {palette}', f'{palette}💥', f'A {palette} is a {palette}, you can\'t say it\'s a half!', f'{palette} is trapped in OFFSET.', f'Our {palette} is in another castle.', f'I\'m sorry, but {palette} exploded, and it\'s all my fault. I sincerely apologise, and promise this won\'t happen in the future.', f'INFINITE LOOP!\n{palette} was destroyed.', f'NOW\'S YOUR CHANCE TO BE A [[{palette}]]!', f'{palette}<:offsetguy:1186024787651330109>', f'```\n\"Hey... Is anybody here..?\"\nThe wind is earshattering. Where is it? Where is the {palette}?\n\"Hello..? {palette}? Are you there?\"\n\"{palette} is dead. It cannot be undone.\"\n\"But why?\"\n\"Because I killed it to make you {palette}\'d\"\nThe news hit me like a car crash. I was {palette}\'d? But why?\nThis will be a mystery for the rest of my life.```', f'The palette `{palette}` could not be found. Perhaps you mean `palette_{palette}`?', 'nah', f'Let\'s Go {palette}ing!', f'Sorry, but {palette} is at {user}\'s house.', f'Looks like {user} is {palette}\'s biggest fan.']
+                return await ctx.error(random.choice(errormess))
             palette, color = "default", palette
         if color is not None:
             r, g, b, _ = Color.parse(Tile(name="<palette command>", palette=palette), p_cache, color)
@@ -447,28 +460,82 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
                              (y * constants.PALETTE_PIXEL_SIZE) - 2),
                             f"{x},{y}",
                             (1, 1, 1, 255),
-                            font,
-                            layout_engine=ImageFont.LAYOUT_BASIC)
+                            font)
                     else:
                         draw.text(
                             (x * constants.PALETTE_PIXEL_SIZE,
                              (y * constants.PALETTE_PIXEL_SIZE) - 2),
                             f"{x},{y}",
                             (255, 255, 255, 255),
-                            font,
-                            layout_engine=ImageFont.LAYOUT_BASIC)
+                            font)
             buf = BytesIO()
             pal_img.save(buf, format="PNG")
             buf.seek(0)
             file = discord.File(buf, filename=f"{palette[:16]}.png")
-            await ctx.reply(f"Palette `{palette[:16]}`:", file=file)
+            await ctx.reply(f"Palette `{palette[:16]}` is right over here!", file=file)
+
+    @commands.cooldown(5, 8, type=commands.BucketType.channel)
+    @commands.command(name="background", aliases=['bg'])
+    async def show_bg(self, ctx: Context, bg: str = None):
+        """Displays a background."""
+        b_cache = self.bot.renderer.bg_cache
+        img = b_cache.get(bg, None)
+        if img is None:
+            return await ctx.error(f'Background {bg} OFFSETTED out of the database, which means that it doesn\'t exist. (Huge props to <@824390281720889374> for making this joke back when RIC\'s =pal command wasn\'t codeblocked, this wouldn\'t have existed without them!)')
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        buf.seek(0)
+        file = discord.File(buf, filename=f"{bg}.png")
+        await ctx.reply(f"Here is background `{bg}`!", file=file)
+
 
     @commands.cooldown(5, 8, type=commands.BucketType.channel)
     @commands.command(name="hint", aliases=["hints"])
     async def show_hint(self, ctx: Context):
         """Shows hints for a level."""
-        return await ctx.send("""The =hint command has been deprecated. Look at [Baba Is Hint](https://www.keyofw.com/baba-is-hint/) for an updated record of hints.""")
+        user = await ctx.bot.fetch_user(ctx.author.id)
+        return await ctx.send(f'{user} doesnt know how to offset!')
 
+    @commands.command(name="uptime")
+    async def show_hint(self, ctx: Context):
+        """Shows how much the bot has been up for."""
+        ut = (datetime.utcnow() - self.bot.started).seconds
+        days, remainder = divmod(ut, 86400)
+        hours, remainder = divmod(remainder, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        daysstr = ""
+        daystrings = ""
+        if days != 1:
+            daysstrings = "s"
+        hoursstrings = ""
+        if hours != 1:
+            hoursstrings = "s"
+        minutesstrings = ""
+        if minutes != 1:
+            minutesstrings = "s"
+        secondsstrings = ""
+        if seconds != 1:
+            secondsstrings = "s"
+        if days != 0:
+            daysstr = f'{days} day{daysstrings}, '
+        hourstr = ""
+        if hours != 0:
+            hourstr = f'{hours} hour{hoursstrings}, '
+        minstr = ""
+        minstrand = ""
+        if seconds > 0:
+            minstrand = " and "
+        if minutes != 0:
+            minstr = f'{minutes} minute{minutesstrings}{minstrand}'
+        embed = discord.Embed(
+            title="OFFSETBOT",
+            color=self.bot.embed_color
+        )
+        embed.add_field(
+            name="Uptime",
+            value=f"""{days}:{hours:02}:{minutes:02}:{seconds:02} ({daysstr}{hourstr}{minstr}{seconds} second{secondsstrings})"""
+        )
+        await ctx.reply(embed=embed)
 
 async def setup(bot: Bot):
     await bot.add_cog(UtilityCommandsCog(bot))

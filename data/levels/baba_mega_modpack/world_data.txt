@@ -1,0 +1,9 @@
+[general]
+name=Mega Modpack
+author=blokos
+mods=1
+
+[levels]
+levelid=8
+rolling_levelid=8
+

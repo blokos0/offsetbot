@@ -1,0 +1,10 @@
+[general]
+firstlevel=11level
+start=10level
+author=Alphons
+name=Dark Sanctuary
+
+[levels]
+levelid=18
+rolling_levelid=13
+

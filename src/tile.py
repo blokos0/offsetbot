@@ -88,7 +88,7 @@ class TileSkeleton:
             # Easter egg!
             out.easter_egg = True
             async with bot.db.conn.cursor() as cur:
-                await cur.execute("SELECT DISTINCT name FROM tiles WHERE tiling LIKE 2 AND name NOT LIKE"
+                await cur.execute("SELECT DISTINCT name FROM tiles WHERE tiling LIKE -1 AND name NOT LIKE"
                                   "'text_anni' ORDER BY RANDOM() LIMIT 1")
                 # NOTE: text_anni should be tiling -1, but Hempuli messed it up I guess
                 out.name = (await cur.fetchall())[0][0]
@@ -101,12 +101,10 @@ class TileSkeleton:
 def is_adjacent(pos, tile, grid, tile_borders=False) -> bool:
     """Tile is next to a joining tile."""
     w, x, y, z = pos
-    joining_tiles = (tile.name, "level", "border")
     if x < 0 or y < 0 or \
             y >= grid.shape[2] or x >= grid.shape[3]:
         return tile_borders
-    return grid[w, z, y, x].name in joining_tiles
-
+    return "wall" in grid[w, z, y, x].name
 
 def get_bitfield(*arr: bool):
     return sum(b << a for a, b in enumerate(list(arr)[::-1]))

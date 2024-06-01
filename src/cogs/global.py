@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import collections
 import os
-import signal
 import time
 import traceback
 import warnings
@@ -200,8 +199,6 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
         def handler(_signum, _frame):
             raise AssertionError("The command took too long and was timed out.")
 
-        signal.signal(signal.SIGALRM, handler)
-        signal.alarm(int(constants.TIMEOUT_DURATION * timeout_multiplier))
         await self.render_tiles(ctx, *args, **kwargs)
 
     async def handle_variant_errors(self, ctx: Context, err: errors.VariantError):
@@ -312,18 +309,6 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
             tiles = re.sub(r"(?<!\\)`", "", tiles)
             # Replace some phrases
             replace_list = [
-                ['а', 'a'],
-                ['в', 'b'],
-                ['е', 'e'],
-                ['з', '3'],
-                ['к', 'k'],
-                ['м', 'm'],
-                ['н', 'h'],
-                ['о', 'o'],
-                ['р', 'p'],
-                ['с', 'c'],
-                ['т', 't'],
-                ['х', 'x'],
                 ['ⓜ', ':m:'],
                 [':thumbsdown:', ':-1:']
             ]
@@ -333,6 +318,10 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
             # Determines if this should be a spoiler
             spoiler = "||" in tiles
             tiles = tiles.replace("||", "")
+
+            # no more text
+            #tiles = tiles.replace("text_", "")
+            #tiles = tiles.replace("$", "")
 
             # Check flags
             old_tiles = tiles
@@ -349,17 +338,6 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
                 else:
                     interp = match.group().strip().replace('`', "'")
                     raise AssertionError(f"Flag `{interp}` isn't valid.")
-
-            offset = 0
-            for match in re.finditer(r"(?<!\\)\"(.*?)(?<!\\)\"", tiles, flags=re.RegexFlag.DOTALL):
-                a, b = match.span()
-                text = match.group(1)
-                prefix = "tile_" if rule else "text_"
-                sliced = re.split("([\n ]|$)", text)
-                zipped = zip(sliced[1::2], sliced[:-1:2])
-                text = "".join(f"{prefix}{t}{joiner}" if t != "-" else f"-{joiner}" for joiner, t in zipped)
-                tiles = tiles[:a - offset] + text + tiles[b - offset:]
-                offset += (b - a) - len(text)
 
             user_macros = ctx.bot.macros | render_ctx.macros
             last_tiles = None
@@ -524,8 +502,6 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
                     f"A tile of size `{e.args[0]}` is larger than the maximum allowed size of `{constants.MAX_TILE_SIZE}`.")
             except errors.VariantError as e:
                 return await self.handle_variant_errors(ctx, e)
-            except errors.TextGenerationError as e:
-                return await self.handle_custom_text_errors(ctx, e)
 
             filename = datetime.utcnow().strftime(
                 f"render_%Y-%m-%d_%H.%M.%S.{render_ctx.image_format}")
@@ -534,7 +510,7 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
                 prefix = ""
             else:
                 prefix = ctx.message.content.split(' ', 1)[0] + " "
-            description = f"{'||' if spoiler else ''}```\n{prefix}{old_tiles}\n```{'||' if spoiler else ''}"
+            description = f"{'||' if spoiler else ''}\n``{prefix}{old_tiles}\n``{'||' if spoiler else ''}"
             if render_ctx.do_embed:
                 embed = discord.Embed(color=self.bot.embed_color)
 
@@ -569,16 +545,7 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
             else:
                 await ctx.reply(description[:2000], embed=embed, file=image)
         finally:
-            signal.alarm(0)
-
-    @app_commands.command()
-    @app_commands.allowed_installs(guilds=False, users=True)
-    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-    async def render(self, intr: Interaction, render_mode: Literal["tile", "text"] = "tile"):
-        """Renders the tiles provided using a modal."""
-        box = RenderBox(self, render_mode == "text")
-        await intr.response.send_modal(box)
-        await box.wait()
+            pass
 
     @commands.command(aliases=["t"])
     @commands.cooldown(5, 8, type=commands.BucketType.channel)
@@ -594,15 +561,11 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
         **Useful tips:**
         * `-` : Shortcut for an empty tile.
         * `&` : Stacks tiles on top of each other. Tiles are rendered in stack order, so in `=rule baba&cursor me`, Baba and Me would be rendered below Cursor.
-        * `$` : `$object` renders text objects.
-        * `,` : `$x,y,...` is expanded into `$x $y ...`
         * `||` : Marks the output gif as a spoiler.
-        * `""`: `"x y ..."` is expanded into `$x $y $...`
 
         **Example commands:**
         `tile baba - keke`
         `tile --palette=marshmallow keke:d baba:s`
-        `tile text_baba,is,you`
         `tile baba&flag ||cake||`
         `tile -P=mountain -B baba bird:l`
         """
@@ -613,47 +576,11 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
             objects=objects,
             rule=False)
 
-    @commands.command(aliases=["text", "r"])
-    @commands.cooldown(5, 8, type=commands.BucketType.channel)
-    async def rule(self, ctx: Context, *, objects: str = ""):
-        """Renders the text tiles provided.
-
-        If not found, the bot tries to auto-generate them!
-
-        **Flags**
-        * See the `flags` commands for all the valid flags.
-
-        **Variants**
-        * `:variant`: Append `:variant` to a tile to change different attributes of a tile. See the `variants` command for more.
-
-        **Useful tips:**
-        * `-` : Shortcut for an empty tile.
-        * `&` : Stacks tiles on top of each other. Tiles are rendered in stack order, so in `=rule baba&cursor me`, Baba and Me would be rendered below Cursor.
-        * `$` : `$object` renders tile objects.
-        * `,` : `$x,y,...` is expanded into `$x $y ...`
-        * `||` : Marks the output gif as a spoiler.
-        * `""`: `"x y ..."` is expanded into `$x $y $...`
-
-        **Example commands:**
-        `rule baba is you`
-        `rule -b rock is ||push||`
-        `rule -p=test tile_baba on baba is word`
-        `rule baba eat baba - tile_baba tile_baba:l`
-        """
-        if self.bot.config['danger_mode']:
-            await warn_dangermode(ctx)
-        await self.start_timeout(
-            ctx,
-            objects=objects,
-            rule=True)
-
     # Generates tiles from a text file.
     @commands.command(aliases=["f"])
     @commands.cooldown(5, 8, type=commands.BucketType.channel)
     async def file(self, ctx: Context, rule: str = ''):
         """Renders the text from a file attatchment.
-
-        Add -r, --rule, -rule, -t, --text, or -text to render as text.
         """
         try:
             objects = str(from_bytes((await ctx.message.attachments[0].read())).best())

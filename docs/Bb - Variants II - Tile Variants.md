@@ -1,0 +1,3 @@
+Tile creation variants, for the most part, manipulate which sprite of the tile you get. For example, `wallb:tr` gives you the sprite of `wallb` connecting to the right.
+To go along with this, for tiles that tile, there's special variants for manually setting its connections. These are `:tr`, `tu`, `tl`, `td`, and for tiles that support corner tiling, `tur`, `tul`, `tdr`, and `tdl`. These stack, so `wall:tl:td` gives you a wall tiled on both horizontal sides.
+Colors can also be specified to change the tile's color. These can be specified with a color name, like `red`, `blue`, `gray`/`grey`, etc, as a palette index `x/y`, or as a hex color `#RGB[A]` or `#RRGGBB[AA]`.

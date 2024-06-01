@@ -1,0 +1,10 @@
+[general]
+name=Candies n Curses
+author=TeoC
+start=10level
+firstlevel=11level
+
+[levels]
+levelid=70
+rolling_levelid=78
+

@@ -1,0 +1,11 @@
+[general]
+name=babas bababox
+author=silverrush
+mods=0
+firstlevel=25level
+start=26level
+
+[levels]
+levelid=37
+rolling_levelid=18
+

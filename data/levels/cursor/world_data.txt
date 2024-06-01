@@ -1,0 +1,10 @@
+[general]
+mods=1
+start=3level
+author=blokos
+name=cursor
+
+[levels]
+levelid=7
+rolling_levelid=7
+

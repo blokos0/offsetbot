@@ -1,0 +1,41 @@
+$3,3Thanks For Playing
+$5,4Modded Mounds
+$3,3By 24ayn5
+$3,3
+$3,3
+$3,3
+$1,3Special thanks to:
+$3,3
+$5,4Regal's Repose
+$1,3which was the main inspiration 
+$1,3for the levelpack
+$3,3
+$5,4Plasmaflare
+$1,3for making the mod itself
+$3,3
+$5,4Hempuli
+$1,3for creating such an amazing game
+$3,3
+$5,4Playtesters
+$1,3who include too many to name
+$1,3and have found countless cheese
+$3,3
+$5,4and you!
+$1,3for playing this pack
+$1,3and (hopefully) supporting it!
+$3,3
+$3,3
+$3,3
+$5,4Extra Credits:
+$3,3
+$1,3Sandy Palette by
+$5,4Regal
+$3,3
+$1,3Custom Music by
+$5,4Chepaki
+$3,3
+$3,3
+$3,3
+$3,3
+$5,4Thanks for Playing!
+$1,3 :)

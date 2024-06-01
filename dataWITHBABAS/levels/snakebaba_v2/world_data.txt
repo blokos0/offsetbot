@@ -1,0 +1,13 @@
+[general]
+bonus_max=0
+clear_max=0
+prize_max=51
+firstlevel=0level
+name=Snakebaba
+start=9level
+author=Germaphobe
+
+[levels]
+levelid=64
+rolling_levelid=55
+

@@ -1,0 +1,15 @@
+[general]
+name=Baba Has Changes
+author=MuhammadTheOld
+prize_max=225
+start=346level
+clear_max=12
+firstlevel=0level
+themecount=27
+bonus_max=3
+mods=1
+
+[levels]
+levelid=347
+rolling_levelid=18
+

@@ -1,0 +1,14 @@
+[levels]
+levelid=32
+[general]
+firstlevel=000level
+name=nonlinearity
+start=000level
+author=silverhawke
+prize_max=32
+clear_max=0
+bonus_max=1
+-- level pack created by silverhawke
+-- special thanks to Notnat Tlikehis for helping out with level designs
+-- twitter => @fluffderg
+-- repo    => https://github.com/silverhawke249/nonlinearity

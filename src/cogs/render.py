@@ -95,9 +95,13 @@ class Renderer:
     def __init__(self, bot: Bot) -> None:
         self.bot = bot
         self.palette_cache = {}
+        self.bg_cache = {}
         for path in glob.glob("data/palettes/*.png"):
             with Image.open(path) as im:
                 self.palette_cache[Path(path).stem] = im.convert("RGBA").copy()
+        for path in glob.glob("data/backgrounds/*.png"):
+            with Image.open(path) as im:
+                self.bg_cache[Path(path).stem] = im.convert("RGBA").copy()
         self.overlay_cache = {}
         for path in glob.glob("data/overlays/*.png"):
             with Image.open(path) as im:
@@ -179,7 +183,7 @@ class Renderer:
                 # for loop in case multiple background images are used
                 # (i.e. baba's world map)
                 bg_img: Image.Image = ctx.background_images[(frame - 1) % len(ctx.background_images)].convert("RGBA")
-                bg_img = bg_img.resize((bg_img.width // ctx.upscale, bg_img.height // ctx.upscale), Image.NEAREST)
+                bg_img = bg_img.resize((default_size[1], default_size[0]), Image.NEAREST)
                 img.paste(bg_img, (0, 0), mask=bg_img)
                 for i in range(animation_wobble):
                     q = i + animation_wobble * f
@@ -378,50 +382,37 @@ class Renderer:
                                 ctx: RenderContext
                                 ) -> Image.Image:
         sprite = None
-        if tile.custom:
-            if type(tile.sprite) == tuple:
-                sprite = await self.generate_sprite(
-                    tile,
-                    style=tile.style or (
-                        "noun" if len(tile.name) < 1 else "letter"),
-                    wobble=frame,
-                    position=(x, y),
-                    ctx=ctx
-                )
-            elif isinstance(tile.sprite, np.ndarray):
-                sprite = tile.sprite[(tile.frame * 3) + frame]
+        path_fallback = None
+        if tile.name == "icon":
+            path = f"data/sprites/{constants.BABA_WORLD}/{tile.name}.png"
+        elif tile.name in ("smiley", "hi") or tile.name.startswith("icon"):
+            path = f"data/sprites/{constants.BABA_WORLD}/{tile.name}_1.png"
+        elif tile.name == "default":
+            path = f"data/sprites/{constants.BABA_WORLD}/default_{frame + 1}.png"
         else:
-            path_fallback = None
-            if tile.name == "icon":
-                path = f"data/sprites/{constants.BABA_WORLD}/{tile.name}.png"
-            elif tile.name in ("smiley", "hi") or tile.name.startswith("icon"):
-                path = f"data/sprites/{constants.BABA_WORLD}/{tile.name}_1.png"
-            elif tile.name == "default":
-                path = f"data/sprites/{constants.BABA_WORLD}/default_{frame + 1}.png"
+            source, sprite_name = tile.sprite
+            if tile.frame == -1:
+                path = f"data/sprites/{constants.BABA_WORLD}/error_0_{frame + 1}.png"
             else:
-                source, sprite_name = tile.sprite
-                if tile.frame == -1:
-                    path = f"data/sprites/{constants.BABA_WORLD}/error_0_{frame + 1}.png"
-                else:
-                    path = f"data/sprites/{source}/{sprite_name}_{tile.frame}_{frame + 1}.png"
-                try:
-                    path_fallback = f"data/sprites/{source}/{sprite_name}_{tile.fallback_frame}_{frame + 1}.png"
-                except BaseException:
-                    path_fallback = None
+                path = f"data/sprites/{source}/{sprite_name}_{tile.frame}_{frame + 1}.png"
             try:
+                path_fallback = f"data/sprites/{source}/{sprite_name}_{tile.fallback_frame}_{frame + 1}.png"
+            except BaseException:
+                path_fallback = None
+        try:
+            sprite = cached_open(
+                path, cache=raw_sprite_cache, fn=Image.open).convert("RGBA")
+        except FileNotFoundError:
+            try:
+                assert path_fallback is not None
                 sprite = cached_open(
-                    path, cache=raw_sprite_cache, fn=Image.open).convert("RGBA")
-            except FileNotFoundError:
-                try:
-                    assert path_fallback is not None
-                    sprite = cached_open(
-                        path_fallback,
-                        cache=raw_sprite_cache,
-                        fn=Image.open).convert("RGBA")
-                except (FileNotFoundError, AssertionError):
-                    raise AssertionError(f'The tile `{tile.name}:{tile.frame}` was found, but the files '
-                                         f'don\'t exist for it.\nSearched paths: `{path}, {path_fallback}`')
-            sprite = np.array(sprite)
+                    path_fallback,
+                    cache=raw_sprite_cache,
+                    fn=Image.open).convert("RGBA")
+            except (FileNotFoundError, AssertionError):
+                raise AssertionError(f'The tile `{tile.name}:{tile.frame}` was found, but the files '
+                                     f'don\'t exist for it.\nSearched paths: `{path}, {path_fallback}`')
+        sprite = np.array(sprite)
         sprite = cv2.resize(sprite, (int(sprite.shape[1] * ctx.gscale), int(sprite.shape[0] * ctx.gscale)),
                             interpolation=cv2.INTER_NEAREST)
         return await self.apply_options_name(
@@ -494,198 +485,7 @@ class Renderer:
             d.append(a)
         return d, len(ctx.tile_cache), rendered_frames, time.perf_counter() - render_overhead
 
-    async def generate_sprite(
-            self,
-            tile: Tile,
-            *,
-            style: str,
-            wobble: int,
-            seed: int | None = None,
-            position: tuple[int, int],
-            ctx: RenderContext
-    ) -> np.ndarray:
-        """Generates a custom text sprite."""
-        text = tile.name[5:].lower().replace(" ", "~")
-        raw = text.replace("/", "")
-        newline_count = text.count("/")
-        assert len(text) <= 64, 'Text has a maximum length of `64` characters.'
-        if seed is None:
-            seed = int((7 + position[0]) / (3 + position[1]) * 100000000)
-        seed_digits = [(seed >> 8 * i) | 0b11111111 for i in range(len(raw))]
-        # Get mode and split status
-        if newline_count >= 1:
-            fixed = True
-            mode = "small"
-            indices = []
-            offset = 0
-            for match in re.finditer("/", text):
-                indices.append(match.start() + offset)
-                offset -= 1
-        else:
-            fixed = False
-            mode = "big"
-            indices = []
-            if len(raw) >= 4:
-                mode = "small"
-                if tile.style != "oneline":
-                    indices = [len(raw) - math.ceil(len(raw) / 2)]
-        indices.insert(0, 0)
-        indices.append(len(raw))  # can't use -1 here because of a range() later on
 
-        if style == "letter":
-            if mode == "big":
-                mode = "letter"
-
-        width_cache: dict[str, list[int]] = {}
-        for c in raw:
-            rows = await self.bot.db.conn.fetchall(
-                '''
-                SELECT char, width FROM letters
-                WHERE char == ? AND mode == ?;
-                ''',
-                c, mode
-            )
-
-            for row in rows:
-                char, width = row
-                width_cache.setdefault(char, []).append(width)
-
-        def width_greater_than(c: str, w: int = 0) -> int:
-            try:
-                return min(width for width in width_cache[c] if width > w)
-            except ValueError:
-                raise KeyError
-
-        # fetch the minimum possible widths first
-        try:
-            widths: list[int] = [width_greater_than(c) for c in raw]
-        except KeyError as e:
-            traceback.print_exc()
-            raise errors.BadCharacter(text, mode, e.args[0])
-
-        max_width = constants.DEFAULT_SPRITE_SIZE
-        old_index = 0
-        for index in indices:
-            max_width = max(max_width, sum(widths[old_index:index]))
-            old_index = index
-
-        def check_or_adjust(widths: list[int], indices: list[int]) -> list[int]:
-            """Is the arrangement valid?"""
-            if mode == "small":
-                if not fixed:
-                    for i in range(1, len(indices) - 1):
-                        width_distance = (
-                                sum(widths[indices[i]:indices[i + 1]]) - sum(widths[indices[i - 1]:indices[i]]))
-                        old_wd = width_distance
-                        debug_flag = 0
-                        while old_wd > width_distance:
-                            debug_flag += 1
-                            indices[i] -= 1
-                            new_width_distance = (
-                                    sum(widths[indices[i]:indices[i + 1]]) - sum(widths[indices[i - 1]:indices[i]]))
-                            if new_width_distance > width_distance:
-                                indices[i] += 2
-                            assert debug_flag > 200, "Ran into an infinite loop while trying to create a text! " \
-                                                     "This shouldn't happen."
-            return indices
-
-        # Check if the arrangement is valid with minimum sizes
-        # If allowed, shift the index to make the arrangement valid
-        indices = check_or_adjust(widths, indices)
-
-        # Expand widths where possible
-        stable = [False for _ in range(len(widths))]
-        while not all(stable):
-            old_width, i = min((w, i)
-                               for i, w in enumerate(widths) if not stable[i])
-            try:
-                new_width = width_greater_than(raw[i], old_width)
-                a = max([0] if not len(max_list := [j for j in indices if i >= j]) else max_list)
-                b = min([len(indices)] if not len(min_list := [j for j in indices if i < j]) else min_list)
-                temp_widths = widths[:i] + [old_width + (new_width - old_width) * (b - a)] + widths[i:]  # BAD
-                assert sum(temp_widths[a:b]) <= constants.DEFAULT_SPRITE_SIZE
-            except (KeyError, AssertionError):
-                stable[i] = True
-                continue
-            widths[i] = new_width
-            try:
-                indices = check_or_adjust(widths, indices)
-            except errors.CustomTextTooLong:
-                widths[i] = old_width
-                stable[i] = True
-
-        # Arrangement is now the widest it can be
-        # Kerning: try for 1 pixel between sprites, and rest to the edges
-        gaps: list[int] = []
-        bounds: list[tuple(int, int)] = list(zip(indices[:-1], indices[1:]))
-        if mode == "small":
-            rows = [widths[a:b] for a, b in bounds]
-        else:
-            rows = [widths[:]]
-        for row in rows:
-            space = max_width - sum(row)
-            # Extra -1 is here to not give kerning space outside the
-            # left/rightmost char
-            chars = len(row) - 1
-            if space >= chars:
-                # left edge
-                gaps.append((space - chars) // 2)
-                # char gap
-                gaps.extend([1] * chars)
-                # right edge gap is implied
-            else:
-                # left edge
-                gaps.append(0)
-                # as many char gaps as possible, starting from the left
-                gaps.extend([1] * space)
-                gaps.extend([0] * (chars - space))
-
-        letters: list[Image.Image] = []
-        for c, seed_digit, width in zip(raw, seed_digits, widths):
-            l_rows = await self.bot.db.conn.fetchall(
-                # fstring use safe
-                f'''
-                SELECT sprite_{int(wobble)} FROM letters
-                WHERE char == ? AND mode == ? AND width == ?
-                ''',
-                c, mode, width
-            )
-            options = list(l_rows)
-            letter_sprite, *_ = *options[seed_digit % len(options)],
-            buf = BytesIO(letter_sprite)
-            letters.append(Image.open(buf))
-
-        sprite = Image.new("L",
-                           (max(max(sum(row) for row in rows),
-                                constants.DEFAULT_SPRITE_SIZE),
-                            (max(len(rows), 2) * constants.DEFAULT_SPRITE_SIZE) // 2))
-        if mode == "small":
-            for j, (a, b) in enumerate(bounds):
-                x = gaps[a]
-                y_center = ((constants.DEFAULT_SPRITE_SIZE // 2) * j) + (constants.DEFAULT_SPRITE_SIZE // 4) \
-                    if style != "oneline" else 12
-                for i in range(a, b):
-                    letter = letters[i]
-                    y_top = y_center - letter.height // 2
-                    sprite.paste(letter, (x, y_top), mask=letter)
-                    x += widths[i]
-                    if i != b - 1:
-                        x += gaps[i + 1]
-        else:
-            x = gaps[0]
-            y_center = 12
-            for i in range(len(raw)):
-                letter = letters[i]
-                y_top = y_center - letter.height // 2
-                sprite.paste(letter, (x, y_top), mask=letter)
-                x += widths[i]
-                if i != len(raw) - 1:
-                    x += gaps[i + 1]
-
-        sprite = Image.merge("RGBA", (sprite, sprite, sprite, sprite))
-        sprite = sprite.resize(
-            (int(sprite.width * ctx.gscale), int(sprite.height * ctx.gscale)), Image.NEAREST)
-        return np.array(sprite)
 
     async def apply_options_name(
             self,
@@ -753,7 +553,7 @@ class Renderer:
                     if formatted_colors.shape[0] > 255:
                         # Should be a UserWarning, but I can't figure out how to catch those AND keep going
                         raise AssertionError(
-                            "Number of colors in image is above the supported amount for the GIF codec!\nTry using `-f=png`.")
+                            "Number of colors in image is above the supported amount for the GIF codec!\nTry using `-f=png` or `-b`.")
                     formatted_colors = formatted_colors[:255].flatten()
                     palette_colors.extend(formatted_colors)
                     dummy = Image.new('P', (16, 16))

@@ -1,0 +1,10 @@
+[levels]
+levelid=13
+rolling_levelid=6
+
+[general]
+name=active blocked
+author=blokos
+start=2level
+mods=1
+

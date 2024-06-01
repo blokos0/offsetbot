@@ -1,0 +1,56 @@
+[
+    {
+        "name": "blokos",
+        "sprite": "blokos",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
+    },
+    {
+        "name": "circle",
+        "sprite": "circle",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
+    },
+    {
+        "name": "offsetbot",
+        "sprite": "offsetbot",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
+    },
+    {
+        "name": "buffguy",
+        "sprite": "buffguy",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
+    },
+    {
+        "name": "nothingbox",
+        "sprite": "nothingbox",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
+    },
+    {
+        "name": "thingbox",
+        "sprite": "thingbox",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
+    }
+]

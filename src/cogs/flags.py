@@ -150,16 +150,6 @@ async def setup(bot: Bot):
         """Makes text default to letters."""
         ctx.letters = True
 
-    @flags.register(
-        match=r"(?:--frames|-frames|-f)=([123]+)",
-        syntax="(--frames | -f)=<frame: 1, 2, or 3 (arbitrary # of times)>")
-    async def frames(match, ctx):
-        """Sets which wobble frames to use."""
-        frames = []
-        for frame in list(match.group(1)):
-            frames.append(int(frame))
-        ctx.frames = frames
-
     @flags.register(match=r"-c|--combine",
                     syntax="-c | --combine",
                     )
@@ -167,12 +157,17 @@ async def setup(bot: Bot):
         """Sets an image to combine this render with."""
         ctx.before_images = await find_message(ctx.ctx)
 
-    @flags.register(match=r"-bg|--combine-background",
-                    syntax="-bg | --combine-background",
+    @flags.register(match=r"(?:-bg|--background)=(\w+)",
+                    syntax="(-bg | --background)=<bg: str>",
                     )
     async def combine_background(match, ctx):
-        """Sets an image to set as the background for this render."""
-        ctx.background_images = await find_message(ctx.ctx)
+        """Sets an background for this render."""
+        ctx.background = Color.parse(Tile(palette=ctx.palette), bot.renderer.palette_cache, (0, 4))
+        bg = match.group(1)
+        if bg + ".png" not in listdir("data/backgrounds"):
+            raise InvalidFlagError(
+                f"I guess the real {bg} was the friend we made along the way (this means that it doesn\'t exist).")
+        ctx.background_images = (Image.open(f'data/backgrounds/{bg}.png'),)
 
     @flags.register(match=r"(?:--speed|-speed)=(\d+)(%)?",
                     syntax="(--speed | -speed)=<speed: int>[%]",
@@ -296,8 +291,8 @@ Note that PNG formats won't animate inside of Discord, you'll have to open them 
                     syntax="--tileborder|-tb",
                     )
     async def tileborder(match, ctx):
-        """Makes the render's border connect to tiles that tile."""
-        ctx.tileborder = True
+        """Makes the tiles not be able to connect to borders"""
+        ctx.tileborder = False
 
     @flags.register(match=r"--boomerang|-br",
                     syntax="--boomerang|-br",

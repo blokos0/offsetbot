@@ -311,13 +311,6 @@ async def setup(bot):
         tile.altered_frame = True
         tile.frame = (tile.frame - 1) % 32
 
-    @add_variant("f", hashed=False)
-    async def frames(tile, *frame: int):
-        """Sets the wobble of the tile to the specified frame(s). 1 or 3 can be specified."""
-        assert all(f in range(1, 4) for f in frame), f"One or more wobble frames is outside of the supported range of [1, 3]!"
-        assert len(frame) <= 3 and len(frame) != 2, "Only 1 or 3 frames can be specified."
-        tile.wobble_frames = [f - 1 for f in frame]
-
     # --- COLORING ---
 
     palette_names = tuple([Path(p).stem for p in glob.glob("data/palettes/*.png")])
@@ -327,20 +320,6 @@ async def setup(bot):
         """Sets the tile's palette. For a list of palettes, try `search type:palette`."""
         assert palette in palette_names, f"Palette `{palette}` was not found!"
         tile.palette = palette
-
-    @add_variant("ac", "~")
-    async def apply(sprite, *, tile, wobble, renderer):
-        """Immediately applies the sprite's default color."""
-        tile.custom_color = True
-        rgba = renderer.palette_cache[tile.palette].getpixel(tile.color)
-        sprite = recolor(sprite, rgba)
-        return sprite
-
-    @add_variant("dcol", "dc", "%")
-    async def default_color(tile, color: Color):
-        """Overrides the tile's default color."""
-        assert len(color) == 2, "Can't override the default with a hexadecimal color!"
-        tile.color = tuple(color)
 
     @add_variant(no_function_name=True)
     async def color(sprite, color: Color, inactive: Optional[Literal["inactive", "in"]] = None, *, tile, wobble, renderer, _default_color = False):
@@ -368,12 +347,6 @@ If [0;36minactive[0m is set and the color isn't hexadecimal, the color will sw
             except IndexError:
                 raise errors.BadPaletteIndex(tile.name, color)
         return recolor(sprite, rgba)
-
-    @add_variant("in")
-    async def inactive(tile):
-        """Applies the color that an inactive text of the tile's color would have.
-    This does not work if a color is specified!"""
-        tile.color = constants.INACTIVE_COLORS[tile.color]
 
     bayer_matrix = np.array([
         [ 0, 32,  8, 40,  2, 34, 10, 42],
@@ -440,49 +413,6 @@ If [0;36mextrapolate[0m is on, then colors outside the gradient will be extrap
         overlay_image = np.roll(overlay_image, (x, y), (0, 1))
         overlay_image = np.tile(overlay_image, (*tile_amount, 1))[:sprite.shape[0], :sprite.shape[1]].astype(float)
         return np.multiply(sprite, overlay_image / 255, casting="unsafe").astype(np.uint8)
-
-    # --- TEXT MANIPULATION ---
-
-    @add_variant("noun", "prop")
-    async def property(sprite,
-                       plate: Optional[Literal["blank", "left", "up", "right", "down", "turn", "deturn"]] = None, *,
-                       tile, wobble, renderer):
-        """Applies a property plate to a sprite."""
-        if plate is None:
-            plate = tile.frame if tile.altered_frame else None
-        else:
-            plate = {v: k for k, v in constants.DIRECTIONS.items()}[plate]
-        sprite = sprite[:, :, 3] > 0
-        plate, _ = renderer.bot.db.plate(plate, wobble)
-        plate = np.array(plate)[..., 3] > 0
-        size = tuple(max(a, b) for a, b in zip(sprite.shape[:2], plate.shape))
-        dummy = np.zeros(size, dtype=bool)
-        delta = ((plate.shape[0] - sprite.shape[0]) // 2,
-                 (plate.shape[1] - sprite.shape[1]) // 2)
-        p_delta = max(-delta[0], 0), max(-delta[1], 0)
-        delta = max(delta[0], 0), max(delta[1], 0)
-        dummy[p_delta[0]:p_delta[0] + plate.shape[0],
-        p_delta[1]:p_delta[1] + plate.shape[1]] = plate
-        dummy[delta[0]:delta[0] + sprite.shape[0],
-        delta[1]:delta[1] + sprite.shape[1]] &= ~sprite
-        return np.dstack([dummy[..., np.newaxis].astype(np.uint8) * 255] * 4)
-
-    @add_variant()
-    async def custom(tile):
-        """Forces custom generation of the text."""
-        tile.custom = True
-        tile.style = "noun"
-
-    @add_variant("let")
-    async def letter(tile):
-        """Makes custom words appear as letter groups."""
-        tile.style = "letter"
-
-    @add_variant("1line", "1l")
-    async def oneline(tile):
-        """Makes custom words appear in one line."""
-        tile.style = "oneline"
-
 
     # --- FILTERS ---
 
@@ -553,7 +483,7 @@ If [0;36mextrapolate[0m is on, then colors outside the gradient will be extrap
         dst_size = (int(w * sprite.shape[0]), int(h * sprite.shape[1]))
         if dst_size[0] <= 0 or dst_size[1] <= 0:
             raise AssertionError(
-                f"Can't scale a tile to `{int(w * sprite.shape[0])}x{int(h * sprite.shape[1])}`, as it has a non-positive target area.")
+                f"Can't scale a tile to `{int(w * sprite.shape[0])}x{int(h * sprite.shape[1])}`, as it has a negative aura to it:pensive:")
         check_size(*dst_size)
         dim = sprite.shape[:2] * np.array((h, w))
         dim = dim.astype(int)
@@ -585,7 +515,7 @@ If [0;36mextrapolate[0m is on, then colors outside the gradient will be extrap
 
     @add_variant("m")
     async def meta(sprite, level: Optional[int] = 1, kernel: Optional[Literal["full", "edge"]] = "full", size: Optional[int] = 1):
-        """Applies a meta filter to an image."""
+        """Applies a Baba Is You meta filter to an image."""
         if level is None: level = 1
         if size is None: size = 1
         assert size > 0, f"The given meta size of {size} is too small!"

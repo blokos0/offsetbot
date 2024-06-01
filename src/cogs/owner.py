@@ -391,53 +391,13 @@ class OwnerCog(commands.Cog, name="Admin", command_attrs=dict(hidden=True)):
         await self.load_custom_tiles()
         await ctx.send(f"Added {name} from bab.")
 
-    @commands.command(aliases=["reboot", "rs"])
+    @commands.command(aliases=["kill", "defeat", "boom", "reboot", "rs"])
     @commands.is_owner()
-    async def restart(self, ctx: Context):
-        """Restarts the bot process."""
-        await ctx.send("Restarting bot process...")
-        await self.bot.change_presence(status=discord.Status.idle, activity=discord.Game(name="Rebooting..."))
-        self.bot.exit_code = 1
-        await self.bot.close()
-
-    @commands.command(aliases=["kill", "yeet",
-                               "defeat", "empty", "not", "kil", "k"])
-    @commands.is_owner()
-    async def logout(self, ctx: Context, endsentence: str = ""):
+    async def logout(self, ctx: Context):
         """Kills the bot process."""
-        if endsentence != "":  # Normally, logout doesn't trigger with arguments.
-            if ctx.invoked_with == "not":
-                if endsentence == "robot":  # Check if the argument is *actually* robot, making robot is not robot
-                    await ctx.send("Poofing bot process...")
-                    await self.bot.close()  # Trigger close before returning
-            print("Almost killed")
-            return  # Doesn't close the bot if any of these logic statements is false
-        elif ctx.invoked_with == "not":
-            return  # Catch "robot is not"
-        elif ctx.invoked_with == "yeet":
-            await ctx.send("Yeeting bot process...")
-        elif ctx.invoked_with == "defeat":
-            await ctx.send("Processing robot is defeat...")
-        elif ctx.invoked_with == "empty":
-            await ctx.send("Voiding bot process...")
-        elif ctx.invoked_with == "kil":
-            await ctx.send("<:wah:950360195199041556>")
-        else:
-            await ctx.send("Killing bot process...")
+        file = discord.File('data/misc/gooby_chat.gif', filename="gooby_chat.gif")
+        await ctx.reply("gooby<:wahset:1199623044990238831>", file=file)
         await self.bot.close()
-
-    @commands.command()
-    @commands.is_owner()
-    async def leave(self, ctx: Context, guild: Optional[discord.Guild] = None):
-        if guild is None:
-            if ctx.guild is not None:
-                await ctx.send("Bye!")
-                await ctx.guild.leave()
-            else:
-                await ctx.send("Not possible in DMs.")
-        else:
-            await guild.leave()
-            await ctx.send(f"Left {guild}.")
 
     @commands.command()
     @commands.is_owner()
@@ -495,8 +455,6 @@ class OwnerCog(commands.Cog, name="Admin", command_attrs=dict(hidden=True)):
             await self.bot.db.conn.execute('DELETE FROM tiles')
         del self.bot.db.filter_cache  # Just to make absolutely sure that it gets flushed
         self.bot.db.filter_cache = {}
-        await self.load_initial_tiles()
-        await self.load_editor_tiles()
         await self.load_custom_tiles()
         self.bot.loading = False
         return await ctx.send("Done. Loaded all tile data.")

@@ -30,7 +30,7 @@ class Context(commands.Context):
 
     async def error(self, msg: str, embed: discord.Embed | None = None) -> Coroutine[discord.Message]:
         try:
-            await self.message.add_reaction("\u26a0\ufe0f")
+            await self.message.add_reaction("<:wahset:1199623044990238831>")
         except discord.errors.NotFound:
             pass
         if embed is not None:
@@ -87,11 +87,15 @@ class Bot(commands.Bot):
         self.flags = None
         self.variants = None
         self.palette_cache = {}
+        self.bg_cache = {}
         self.macros = {}
         self.baba_loaded = True
         for path in glob.glob("data/palettes/*.png"):
             with Image.open(path) as im:
                 self.palette_cache[Path(path).stem] = im.convert("RGBA").copy()
+        for path in glob.glob("data/backgrounds/*.png"):
+            with Image.open(path) as im:
+                self.bg_cache[Path(path).stem] = im.convert("RGBA").copy()
         numpy_set_printoptions(
             threshold=sys.maxsize,
             linewidth=sys.maxsize
@@ -119,19 +123,12 @@ class Bot(commands.Bot):
             for (name, value, description, author) in await cur.fetchall():
                 self.macros[name] = Macro(value, description, author)
         print(f"Logged in as {self.user}!")
-        if bot.baba_loaded:
-            await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="commands..."))
-        else:
-            await bot.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.playing,
-                    name="Still being set up..."
-                ),
-                status=discord.Status.do_not_disturb
-            )
+        channel = bot.get_channel(1228241523280314430)
+        await channel.send('hello world! the bot is back online<:boomsetguy:1238868517273731182>')
+        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="OFFSET's OST..."))
 
     async def is_owner(self, user: discord.User):
-        if user.id == 280756504674566144:  # Implement your own conditions here
+        if user.id == 1245516600405393469:  # Implement your own conditions here
             return True
 
         # Else fall back to the original
@@ -166,23 +163,6 @@ bot = Bot(
     db_path=config.db_path
 )
 
-
-@bot.event
-async def on_command(ctx):
-    try:
-        webhook = await bot.fetch_webhook(webhooks.logging_id)
-        ctx: Context
-        embed = discord.Embed(
-            description=ctx.message.content,
-            color=config.logging_color)
-        embed.set_author(name=f'{ctx.author.name}'[:32],
-                         icon_url=ctx.author.avatar.url if ctx.author.avatar else None)
-        if not isinstance(ctx.channel, discord.DMChannel):
-            embed.set_footer(text=f"{ctx.message.guild.name} ({ctx.message.guild.id})", icon_url=ctx.message.guild.icon.url)
-        await webhook.send(embed=embed)
-    except Exception as e:
-        warnings.warn("\n".join(traceback.format_exception(e)))
-
-
 bot.run(auth.token, log_handler=None)
+
 sys.exit(bot.exit_code)

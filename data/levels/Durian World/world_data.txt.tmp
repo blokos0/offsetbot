@@ -1,0 +1,11 @@
+[general]
+name=Durian World
+author=DurianFruit
+start=76level
+firstlevel=110level
+themecount=5
+
+[levels]
+levelid=186
+rolling_levelid=110
+

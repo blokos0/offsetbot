@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import os
 import re
-import signal
 import sqlite3
 import sys
 import traceback
@@ -138,10 +137,10 @@ class CommandErrorHandler(commands.Cog):
                 return await self.logger.send(embed=emb)
 
             elif isinstance(error, commands.ExpectedClosingQuoteError):
-                return await ctx.error(f"Expected closing quotation mark `{error.close_quote}`.")
+                return await ctx.error(f"You gotta close what you open with `{error.close_quote}`.")
 
             elif isinstance(error, commands.InvalidEndOfQuotedStringError):
-                return await ctx.error(f"Expected a space after a quoted string, got `{error.char}` instead.")
+                return await ctx.error(f"`{error.char}` isn\'t friends with quoted strings, but spaces are!")
 
             elif isinstance(error, commands.UnexpectedQuoteError):
                 return await ctx.error(f"Got unexpected quotation mark `{error.quote}` inside a string.")
@@ -260,7 +259,7 @@ User: @{ctx.message.author.name}#{ctx.message.author.discriminator} ({ctx.messag
                 file=sys.stderr)
             return
         finally:
-            signal.alarm(0)
+            pass
 
 
 async def setup(bot: Bot):

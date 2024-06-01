@@ -1,5 +1,4 @@
 import io
-import signal
 from datetime import datetime
 from typing import Literal
 
@@ -26,8 +25,6 @@ async def start_timeout(fn, *args, **kwargs):
     def handler(_signum, _frame):
         raise AssertionError("The command took too long and was timed out.")
 
-    signal.signal(signal.SIGALRM, handler)
-    signal.alarm(int(constants.TIMEOUT_DURATION))
     return fn(*args, **kwargs)
 
 
@@ -241,12 +238,12 @@ class MacroCommandCog(commands.Cog, name='Macros'):
                 files.append(discord.File(out, filename=f'debug-{datetime.now().isoformat()}.txt'))
             return await ctx.reply(message, files=files)
         finally:
-            signal.alarm(0)
+            pass
 
     @macro.command(aliases=["i", "get"])
     async def info(self, ctx: Context, name: str):
         """Gets info about a specific macro."""
-        assert name in self.bot.macros, f"Macro `{name}` isn't in the database!"
+        assert name in self.bot.macros, f"Macro `{name}` isn't in the database! Consider yourself macro\'d."
         macro = self.bot.macros[name]
         emb = discord.Embed(
             title=name

@@ -283,10 +283,10 @@ class RenderContext:
     background_images: list[str] | list[Image] | None = None
     out: str | BinaryIO = "target/renders/render.gif"
     background: tuple[int, int] | None = None
-    upscale: int = 2
+    upscale: int = 1
     extra_out: str | BinaryIO | None = None
     extra_name: str | None = None
-    frames: list[int] = (1, 2, 3)
+    frames: list[int] = (1,)
     animation: tuple[int, int] = None
     cropped: bool = False
     speed: int = 200
@@ -296,7 +296,7 @@ class RenderContext:
     loop: bool = True
     spacing: int = constants.DEFAULT_SPRITE_SIZE
     boomerang: bool = False
-    random_animations: bool = True
+    random_animations: bool = False
     expand: bool = False
     sign_texts: list = field(default_factory=lambda: [])
     _disable_limit: bool = False
@@ -305,7 +305,7 @@ class RenderContext:
     do_embed: bool = False
     global_variant: str = ""
     macros: dict = field(default_factory=lambda: {})
-    tileborder: bool = False
+    tileborder: bool = True
     gscale: int = 1
     sprite_cache: dict = field(default_factory=lambda: {})
     tile_cache: dict = field(default_factory=lambda: {})

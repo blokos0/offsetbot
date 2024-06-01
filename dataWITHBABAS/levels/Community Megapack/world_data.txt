@@ -1,0 +1,13 @@
+[general]
+prize_max=0
+author=Megapack Team
+name=Community Megapack Beta!
+firstlevel=Map
+clear_max=13
+start=Map
+bonus_max=11
+
+[levels]
+levelid=307
+rolling_levelid=8
+

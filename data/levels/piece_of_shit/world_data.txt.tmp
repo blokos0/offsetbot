@@ -1,0 +1,10 @@
+[general]
+name=this levelpack was made
+author=blokos
+firstlevel=1level
+start=1level
+
+[levels]
+levelid=9
+rolling_levelid=9
+

@@ -1,11 +1,11 @@
 import discord
 
-activity = "Booting..."
-description = "*An entertainment bot for rendering levels and custom scenes based on the indie game Baba Is You.*"
-prefixes = ["=", "robot is ", "ROBOT IS "]
+activity = "booting..."
+description = "fork of ric for messing around"
+prefixes = ["="]
 trigger_on_mention = True
-embed_color = discord.Color(12877055)
-logging_color = 0xffffff
+embed_color = 0x731CFF
+logging_color = 0xFFFFFF
 auth_file = "config/auth.json"
 log_file = "log.txt"
 db_path = "robot.db"
@@ -18,7 +18,6 @@ cogs = [
 	"src.cogs.render",
 	"src.cogs.variants",
 	"src.cogs.utilities",
-	"src.cogs.generator",
 	"src.cogs.event",
 	"src.cogs.flags",
 	"src.cogs.macro_commands",

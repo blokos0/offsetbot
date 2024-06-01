@@ -108,17 +108,11 @@ class MetaCog(commands.Cog, name="Other Commands"):
     async def ping(self, ctx: Context):
         """Returns bot latency."""
 
-        def clamp(val, mn, mx): return max(min(val, mx), mn)
-
         pingns = int(self.bot.latency * 1000)
-        color = reduce(
-            lambda a, b: (a << 8) + b,
-            [int(255 * n) for n in colorsys.hsv_to_rgb((0.33333333 -
-                                                        ((pingns / 250) * 0.33333333)) % 1, 0.4, 1)]
-        )
+
         await ctx.send(embed=discord.Embed(
-            title="Latency",
-            color=discord.Color(color),
+            title="latency (i apologize for my internet)",
+            color=self.bot.embed_color,
             description=f"{pingns} ms"))
 
     @commands.command(aliases=["commands"])
@@ -152,19 +146,19 @@ class MetaCog(commands.Cog, name="Other Commands"):
         if query is not None:
             return await ctx.invoke(self.bot.get_command("cmds"), query=query)
         embed = discord.Embed(
-            title="ROBOT IS CHILL",
+            title="OFFSETBOT",
             color=self.bot.embed_color
         )
         embed.add_field(
             name="",
-            value="""Welcome to the bot! 
-This help page should be able to guide you to everything you need to know.
-- If you need a list of tiles you can use, look through `search`.
-- If you need a list of commands, look at `commands`.
-- If you need to make a render, look at `commands tile`.
-- If you need help on a level, look at `hints`.
-- If you need to look at a level, look at `level`.
-- If you need help learning how to make renders, look at `doc`.""",
+            value="""welcome to the bot! (not really my bot, more like a mod of robot is chill) 
+this help page should be able to guide you to everything you need to know
+- if you need a list of tiles you can use, look through `search`
+- if you need a list of commands, look at `commands`
+- if you need to make a render, look at `commands tile`
+- if you need to be ashamed, look at `hints` (there are no hints)
+- if you need to look at a level, look at `level` (there are no levels yet)
+- if you need help learning how to make renders, look at `docs`""",
             inline=False
         )
         ut = (datetime.utcnow() - self.bot.started).seconds
@@ -176,117 +170,26 @@ This help page should be able to guide you to everything you need to know.
         minutes, seconds = divmod(remainder, 60)
         embed.add_field(
             name="Statistics",
-            value=f"""Guilds: {len(self.bot.guilds)}/100
-Channels: {sum(len(g.channels) for g in self.bot.guilds)}
-Uptime: {days}:{hours:02}:{minutes:02}:{seconds:02}
-Tiles: {tile_amount}""",
+            value=f"""guilds (fancy term for servers): {len(self.bot.guilds)}/100
+channels: {sum(len(g.channels) for g in self.bot.guilds)}
+uptime: {days}:{hours:02}:{minutes:02}:{seconds:02}
+tiles: {tile_amount}""",
             inline=True
         )
         embed.add_field(
             name="Developers",
-            value="""_@baltdev_ - Current lead
-_@centdemeern1_ - Co-lead
-_@rocketrace_ - Original lead
-_@theopold_ - Major help with upkeep and sprite management
+            value="""_@blokos_ - dev
+_@balt_ - creator of robot is chill
+_@gabeyk9_ - helped a lot
 """,
             inline=True
         )
         embed.add_field(
             name="Links",
-            value="""[Invitation](https://balt.sno.mba/chill/invite)
-[Support Guild](https://balt.sno.mba/chill/server)
-[GitHub](https://balt.sno.mba/chill/github)""",
-            inline=True
-        )
-        embed.add_field(
-            name="Credits",
-            value="""[Baba Is Bookmark](https://baba-is-bookmark.herokuapp.com/) - SpiccyMayonnaise""",
+            value="""[the offset server](https://discord.gg/cbUMDFnGWb)\n[the robot is chill server](https://discord.gg/ktk8XkAfGD)""",
             inline=True
         )
         await ctx.send(embed=embed)
-
-    @commands.command(aliases=["interpret"])
-    @commands.cooldown(5, 8, type=commands.BucketType.channel)
-    async def babalang(self, ctx: Context, program: str, *program_input: str):
-        """Interpret a [Babalang v1.1.1](https://esolangs.org/wiki/Babalang)
-        program.
-
-        The first argument must be the source code for the program, escaped in quotes:
-
-        * e.g. `"baba is group and word and text"`
-
-        The second argument is the optional input, also escaped in quotes:
-
-        * e.g. `"foo bar"`
-
-        Both arguments can be multi-line. The input argument will be automatically padded
-        with trailing newlines as necessary.
-        """
-        prog_input = program_input
-        if len(prog_input) > 1:
-            program = " ".join([program] + list(prog_input))
-            prog_input = ""
-        elif len(prog_input) == 1 and prog_input[0] and prog_input[0][-1] != "\n":
-            prog_input = prog_input[0] + "\n"
-        else:
-            prog_input = ""
-
-        def interpret_babalang():
-            try:
-                if os.name == "nt":
-                    babalang_executable_path = "./src/babalang.exe"
-                else:
-                    babalang_executable_path = "./src/babalang"
-                process = run(
-                    [babalang_executable_path, "-c", f"'{program}'"],
-                    stdout=PIPE,
-                    stderr=STDOUT,
-                    timeout=1.0,
-                    input=prog_input.encode("utf-8", "ignore"),
-                )
-                if process.stdout is not None:
-                    return (process.returncode,
-                            process.stdout[:1000].decode("utf-8", "replace"))
-                else:
-                    return (process.returncode, "")
-            except TimeoutExpired as timeout:
-                if timeout.output is not None:
-                    if isinstance(timeout.output, bytes):
-                        return (None, timeout.output[:1000].decode(
-                            "utf-8", "replace"))
-                    else:
-                        return (None, timeout.output)
-                else:
-                    return (None, None)
-
-        return_code, output = await self.bot.loop.run_in_executor(None, interpret_babalang)
-
-        too_long = False
-        if output:
-            lines = output.splitlines()
-            if len(lines) > 50:
-                output = "\n".join(lines[:50])
-                too_long = True
-            if len(output) > 500:
-                output = output[:500]
-                too_long = True
-
-        message = []
-        if return_code is None:
-            message.append("The program took too long to execute:\n")
-        else:
-            message.append(
-                f"The program terminated with return code `{return_code}`:\n")
-
-        if not output:
-            message.append("```\n[No output]\n```")
-        elif too_long:
-            message.append(
-                f"```\n{output} [...]\n[Output too long, truncated]\n```")
-        else:
-            message.append(f"```\n{output}\n```")
-
-        await ctx.send("".join(message))
 
     @commands.command(aliases=["docs"])
     async def doc(self, ctx: Context, page: int = 0):

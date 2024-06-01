@@ -1,0 +1,11 @@
+[general]
+name=Baba machine
+author=Clicktuck
+mods=1
+start=15level
+firstlevel=15level
+
+[levels]
+levelid=79
+rolling_levelid=70
+
