@@ -1,5 +1,6 @@
 # OFFSETBOT
-this is a fork of (robot is chill)[https://github.com/balt-dev/robot-is-chill]
+
+this is a fork of [robot is chill](https://github.com/balt-dev/robot-is-chill)
 ---
 
 This is a self-sustained fork of "Robot is you" project of RocketRace,
