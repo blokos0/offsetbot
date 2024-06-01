@@ -547,6 +547,15 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
         finally:
             pass
 
+    @app_commands.command()
+    @app_commands.allowed_installs(guilds=False, users=True)
+    @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
+    async def render(self, intr: Interaction, render_mode: Literal["tile", "text"] = "tile"):
+        """Renders the tiles provided using a modal."""
+        box = RenderBox(self, render_mode == "text")
+        await intr.response.send_modal(box)
+        await box.wait()
+
     @commands.command(aliases=["t"])
     @commands.cooldown(5, 8, type=commands.BucketType.channel)
     async def tile(self, ctx: Context, *, objects: str = ""):

@@ -488,7 +488,6 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
         file = discord.File(buf, filename=f"{bg}.png")
         await ctx.reply(f"Here is background `{bg}`!", file=file)
 
-
     @commands.cooldown(5, 8, type=commands.BucketType.channel)
     @commands.command(name="hint", aliases=["hints"])
     async def show_hint(self, ctx: Context):

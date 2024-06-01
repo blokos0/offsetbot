@@ -1083,19 +1083,5 @@ class OwnerCog(commands.Cog, name="Admin", command_attrs=dict(hidden=True)):
             replace(world / "Images", pathlib.Path(bot_path) / "images" / world_name)
         await message.edit(content="Done.")
 
-
-    @commands.Cog.listener()
-    async def on_guild_join(self, guild: discord.Guild):
-        webhook = await self.bot.fetch_webhook(self.bot.webhook_id)
-        embed = discord.Embed(
-            color=self.bot.embed_color,
-            title="Joined Guild",
-            description=f"Joined {guild.name}."
-        )
-        embed.add_field(name="ID", value=str(guild.id))
-        embed.add_field(name="Member Count", value=str(guild.member_count))
-        await webhook.send(embed=embed)
-
-
 async def setup(bot: Bot):
     await bot.add_cog(OwnerCog(bot))
