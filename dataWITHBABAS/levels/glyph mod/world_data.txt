@@ -1,9 +1,0 @@
-[general]
-name=glyph mod
-author=blokos
-mods=1
-
-[levels]
-levelid=2
-rolling_levelid=2
-

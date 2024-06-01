@@ -1,7 +1,0 @@
-[levels]
-levelid=160
-rolling_levelid=161
-
-[general]
-themecount=7
-
