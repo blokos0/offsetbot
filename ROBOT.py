@@ -123,8 +123,6 @@ class Bot(commands.Bot):
             for (name, value, description, author) in await cur.fetchall():
                 self.macros[name] = Macro(value, description, author)
         print(f"Logged in as {self.user}!")
-        channel = bot.get_channel(1228241523280314430)
-        await channel.send('hello world! the bot is back online<:boomsetguy:1238868517273731182>')
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="OFFSET's OST..."))
 
     async def is_owner(self, user: discord.User):

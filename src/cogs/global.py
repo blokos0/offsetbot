@@ -115,31 +115,15 @@ class RenderBox(ui.Modal, title='Render Body'):
     text: bool
     bot: Bot
 
-    def __init__(self, cog: GlobalCog, text: bool):
+    def __init__(self, cog: GlobalCog):
         super().__init__()
         self.global_cog = cog
-        self.text = text
         self.bot = cog.bot
 
-    scene = ui.TextInput(label='Scene Contents', style=discord.TextStyle.paragraph,
-                         placeholder="-b\n$baba $is $you\nbaba . flag\n$flag $is $win")
+    scene = ui.TextInput(label='Scene Contents', style=discord.TextStyle.paragraph)
 
     async def on_submit(self, intr: discord.Interaction):
         await intr.response.defer(ephemeral=False, thinking=True)
-
-        try:
-            webhook = await self.bot.fetch_webhook(webhooks.logging_id)
-            ctx: Context
-            embed = discord.Embed(
-                description=f"/render {self.scene.value}",
-                color=config.logging_color)
-            embed.set_author(
-                name=f'{intr.user.name}'[:32],
-                icon_url=intr.user.avatar.url if intr.user.avatar else None
-            )
-            await webhook.send(embed=embed)
-        except Exception as e:
-            warnings.warn("\n".join(traceback.format_exception(e)))
 
         wrapper = RenderBoxWrapper(intr)
         wrapper.message.content = self.scene.value
@@ -148,7 +132,7 @@ class RenderBox(ui.Modal, title='Render Body'):
         await self.global_cog.render_tiles(
             wrapper,
             objects=self.scene.value,
-            rule=self.text
+            rule=False
         )
 
 
@@ -550,9 +534,9 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
     @app_commands.command()
     @app_commands.allowed_installs(guilds=False, users=True)
     @app_commands.allowed_contexts(guilds=True, dms=True, private_channels=True)
-    async def render(self, intr: Interaction, render_mode: Literal["tile", "text"] = "tile"):
+    async def render(self, intr: Interaction):
         """Renders the tiles provided using a modal."""
-        box = RenderBox(self, render_mode == "text")
+        box = RenderBox(self)
         await intr.response.send_modal(box)
         await box.wait()
 

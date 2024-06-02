@@ -104,7 +104,7 @@ async def setup(bot: Bot):
     flags = Flags()
     bot.flags = flags
 
-    @flags.register(match=r"(?:--background|-b)(?:=("
+    @flags.register(match=r"(?:--backgroundc|-b)(?:=("
                           rf"(?:#(?:[0-9A-Fa-f]{{2}}){{3,4}})|"
                           rf"(?:#(?:[0-9A-Fa-f]){{3,4}})|"
                           rf"(?:{'|'.join(constants.COLOR_NAMES.keys())})|"
@@ -143,12 +143,6 @@ async def setup(bot: Bot):
     async def comment(match, ctx):
         """Just a comment, does nothing."""
         pass
-
-    @flags.register(match=r"--letter",
-                    syntax="--letter")
-    async def letters(match, ctx):
-        """Makes text default to letters."""
-        ctx.letters = True
 
     @flags.register(match=r"-c|--combine",
                     syntax="-c | --combine",
