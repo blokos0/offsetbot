@@ -70,9 +70,14 @@ class TileSkeleton:
                 string = string[1:]
             else:
                 string = "text_" + string
-        elif string[0] == "$":
-            explicitly_text = True
-            string = "text_" + string[1:]
+        #elif string[0] == "$":
+        #    explicitly_text = True
+        #    string = "text_" + string[1:]
+
+        explicitly_text = False # precautions
+        explicitly_tile = True
+        rule = False
+
         out.empty = False
         out.raw_string = string
         out.palette = palette
@@ -92,7 +97,7 @@ class TileSkeleton:
                                   "'text_anni' ORDER BY RANDOM() LIMIT 1")
                 # NOTE: text_anni should be tiling -1, but Hempuli messed it up I guess
                 out.name = (await cur.fetchall())[0][0]
-            raw_variants.insert(0, "m!2ify")
+            raw_variants.insert(0, "[2ify]")
         out.variants |= parse_variants(bot, possible_variants, raw_variants, name=out.name,
                                        possible_variant_names=possible_variant_names, macros=macros)
         return out
@@ -187,23 +192,7 @@ class Tile:
             if metadata.tiling == constants.TILING_TILE:
                 handle_tiling(value, grid, position, tile_borders=tile_borders)
         except KeyError:
-            if name[:5] == "text_":
-                value = cls(name=name, tiling=constants.TILING_NONE, variants=tile.variants, empty=False, custom=True,
-                            palette=tile.palette)
-            elif name[:5] == "char_" and ctx is not None:  # allow external calling for potential future things?
-                seed = int(name[5:]) if re.fullmatch(r'-?\d+', name[5:]) else name[5:]
-                character = ctx.bot.generator.generate(seed=seed)
-                color = character[1]["color"]
-                value = cls(name=name, tiling=constants.TILING_CHAR, variants=tile.variants, empty=False, custom=True,
-                            sprite=character[0], color=color, palette=tile.palette)
-            elif name[:6] == "cchar_" and ctx is not None:  # allow external calling for potential future things? again?
-                customid = int(name[6:]) if re.fullmatch(r'-?\d+', name[6:]) else name[6:]
-                character = ctx.bot.generator.generate(customid=customid)
-                color = character[1]["color"]
-                value = cls(name=name, tiling=constants.TILING_CHAR, variants=tile.variants, empty=False, custom=True,
-                            sprite=character[0], color=color, palette=tile.palette)
-            else:
-                raise errors.TileNotFound(name)
+            raise errors.TileNotFound(name)
         for variant in value.variants["tile"]:
             await variant.apply(value)
             if value.surrounding != 0:

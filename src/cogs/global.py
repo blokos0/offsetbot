@@ -67,7 +67,6 @@ def split_commas(grid: list[list[str]], prefix: str):
             row[change[0]:change[0] + 1] = change[1]
     return grid
 
-
 async def warn_dangermode(ctx: Context):
     warning_embed = discord.Embed(
         title="Warning: Danger Mode",
