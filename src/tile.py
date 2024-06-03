@@ -97,7 +97,7 @@ class TileSkeleton:
                                   "'text_anni' ORDER BY RANDOM() LIMIT 1")
                 # NOTE: text_anni should be tiling -1, but Hempuli messed it up I guess
                 out.name = (await cur.fetchall())[0][0]
-            raw_variants.insert(0, "[2ify]")
+            raw_variants.insert(0, "m!2ify")
         out.variants |= parse_variants(bot, possible_variants, raw_variants, name=out.name,
                                        possible_variant_names=possible_variant_names, macros=macros)
         return out
