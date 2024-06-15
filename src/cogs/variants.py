@@ -483,7 +483,7 @@ If [0;36mextrapolate[0m is on, then colors outside the gradient will be extrap
         dst_size = (int(w * sprite.shape[0]), int(h * sprite.shape[1]))
         if dst_size[0] <= 0 or dst_size[1] <= 0:
             raise AssertionError(
-                f"Can't scale a tile to `{int(w * sprite.shape[0])}x{int(h * sprite.shape[1])}`, as it has a negative aura to it:pensive:")
+                f"cant scale a tile to `{int(w * sprite.shape[0])}x{int(h * sprite.shape[1])}`, as it has a negative aura to it:pensive:")
         check_size(*dst_size)
         dim = sprite.shape[:2] * np.array((h, w))
         dim = dim.astype(int)
@@ -515,7 +515,7 @@ If [0;36mextrapolate[0m is on, then colors outside the gradient will be extrap
 
     @add_variant("m")
     async def meta(sprite, level: Optional[int] = 1, kernel: Optional[Literal["full", "edge"]] = "full", size: Optional[int] = 1):
-        """Applies a Baba Is You meta filter to an image."""
+        """Applies a Baba Is You meta effect to a sprite."""
         if level is None: level = 1
         if size is None: size = 1
         assert size > 0, f"The given meta size of {size} is too small!"

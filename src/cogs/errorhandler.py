@@ -137,13 +137,13 @@ class CommandErrorHandler(commands.Cog):
                 return await self.logger.send(embed=emb)
 
             elif isinstance(error, commands.ExpectedClosingQuoteError):
-                return await ctx.error(f"You gotta close what you open with `{error.close_quote}`.")
+                return await ctx.error(f"you gotta close what you open with {error.close_quote}!!")
 
             elif isinstance(error, commands.InvalidEndOfQuotedStringError):
-                return await ctx.error(f"`{error.char}` isn\'t friends with quoted strings, but spaces are!")
+                return await ctx.error(f"{error.char} isnt friends with quoted strings, but spaces are!")
 
             elif isinstance(error, commands.UnexpectedQuoteError):
-                return await ctx.error(f"Got unexpected quotation mark `{error.quote}` inside a string.")
+                return await ctx.error(f"why is your {error.quote} in a string!!")
 
             elif isinstance(error, commands.ConversionError):
                 await self.logger.send(embed=emb)
@@ -155,7 +155,7 @@ class CommandErrorHandler(commands.Cog):
 
             elif isinstance(error, ZeroDivisionError):
                 traceback.print_exception(error)
-                return await ctx.error('Encountered a division by zero somewhere. Why?')
+                return await ctx.error("me when i divide by zero:")
 
             elif isinstance(error, ArithmeticError):
                 await self.logger.send(embed=emb)
@@ -163,14 +163,14 @@ class CommandErrorHandler(commands.Cog):
 
             elif isinstance(error, commands.BadArgument):
                 await self.logger.send(embed=emb)
-                return await ctx.error(f"Invalid argument provided. Check the help command for the proper format.")
+                return await ctx.error(f"thats... not the right argument. check the help command for the proper format!!")
 
             elif isinstance(error, commands.ArgumentParsingError):
                 await self.logger.send(embed=emb)
                 return await ctx.error("Invalid function arguments provided.")
 
             elif isinstance(error, commands.MissingRequiredArgument):
-                return await ctx.error(f"Required argument {error.param} is missing.")
+                return await ctx.error(f"cant wait to play {error.param} is missing for the super nintendo entertainment system!")
 
             elif isinstance(error, discord.errors.HTTPException):
                 if error.status == 400:
@@ -190,14 +190,14 @@ class CommandErrorHandler(commands.Cog):
             elif isinstance(error, requests.exceptions.ConnectionError):
                 return await ctx.error('A given link for the filterimage was invalid.')
             elif isinstance(error, errors.OverlayNotFound):
-                return await ctx.error(f'The overlay `{error}` does not exist.')
+                return await ctx.error(f'the overlay `{error}` is foundnt!')
             elif isinstance(error, asyncio.exceptions.TimeoutError):
-                return await ctx.error(f'The render took too long, so it was cancelled.')
+                return await ctx.error(f'its taking way too long, so ill just cancel it...')
             elif isinstance(error, errors.InvalidFlagError):
                 return await ctx.error(f'A flag failed to parse:\n> `{error}`')
             elif isinstance(error, errors.FailedBuiltinMacro):
                 if error.custom:
-                    return await ctx.error(f'A macro created a custom error:\n> {error.message}')
+                    return await ctx.error(f'a custom macro said:\n> {error.message}')
                 else:
                     return await ctx.error(f'A builtin macro failed to compute in `{error.raw}`:\n> {error.message}')
             elif isinstance(error, commands.BadLiteralArgument):
@@ -251,7 +251,7 @@ User: @{ctx.message.author.name}#{ctx.message.author.discriminator} ({ctx.messag
                 error.__traceback__,
                 file=sys.stderr)
         except Exception as error:
-            await ctx.error('The error handler errored! Printing error to console...')
+            await ctx.error('the error handler errored! how ironic...')
             traceback.print_exception(
                 type(error),
                 error,

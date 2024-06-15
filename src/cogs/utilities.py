@@ -118,18 +118,18 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
     async def undo(self, ctx: Context):
         """Deletes the last message sent from the bot."""
         await ctx.typing()
-        h = ctx.channel.history(limit=20)
+        h = ctx.channel.history(limit = 20)
         async for m in h:
             if m.author.id == self.bot.user.id and m.attachments:
                 try:
                     reply = await ctx.channel.fetch_message(m.reference.message_id)
                     if reply.author == ctx.message.author:
                         await m.delete()
-                        await ctx.send('Removed message.', delete_after=3.0)
+                        await ctx.send("no more message!!!:boom:", delete_after=3.0)
                         return
                 except BaseException:
                     pass
-        await ctx.error('None of your commands were found in the last `20` messages.')
+        await ctx.error("couldnt find any of your renders in the last 20 messages!!!!")
 
     @commands.command()
     @commands.cooldown(4, 8, type=commands.BucketType.channel)
@@ -366,7 +366,7 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
         variants = ctx.bot.variants._values
         if query is not None:
             variants = [var for var in variants if (query in var.__name__.lower() or query in var.__doc__) and not var.hidden]
-        assert len(variants) > 0, f"No variants were found with the query `{query}`!"
+        assert len(variants) > 0, f"{query}? i dont know them!"
         await ButtonPages(
             source=VariantSource(
                 sorted(variants, key=sort)  # Sort alphabetically
@@ -386,7 +386,7 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
             try:
                 sprite_name, source, colorx, colory, tiling = tuple(await result.fetchone())
             except BaseException:
-                return await ctx.error(f'Tile {name} not found!')
+                return await ctx.error(f'the tile {name} could not be grabbed, since you cant grab nothingness!')
             files = glob.glob(f'data/sprites/{source}/{sprite_name}_*.png')
             zipped_files = BytesIO()
             with zipfile.ZipFile(zipped_files, "x") as zip_file:
@@ -429,9 +429,7 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
         img = p_cache.get(palette, None)
         if img is None:
             if "/" not in palette:
-                user = await ctx.bot.fetch_user(ctx.author.id)
-                errormess = [f'{palette}', f'{palette} has been OFFSETGUYED.', f'Are you {palette}? If not, please form ALL FEELING YOU IS {palette}', f'{palette}{palette}{palette}{palette}{palette}', f'{palette} is an OFFSET spoiler, and thus cannot be shown.', f'{palette} is not real.', f'{palette} IS NOT {palette}.', f'get {palette}\'d lmao!', f'sorry, i ate {palette}', f'{palette}💥', f'A {palette} is a {palette}, you can\'t say it\'s a half!', f'{palette} is trapped in OFFSET.', f'Our {palette} is in another castle.', f'I\'m sorry, but {palette} exploded, and it\'s all my fault. I sincerely apologise, and promise this won\'t happen in the future.', f'INFINITE LOOP!\n{palette} was destroyed.', f'NOW\'S YOUR CHANCE TO BE A [[{palette}]]!', f'{palette}<:offsetguy:1186024787651330109>', f'```\n\"Hey... Is anybody here..?\"\nThe wind is earshattering. Where is it? Where is the {palette}?\n\"Hello..? {palette}? Are you there?\"\n\"{palette} is dead. It cannot be undone.\"\n\"But why?\"\n\"Because I killed it to make you {palette}\'d\"\nThe news hit me like a car crash. I was {palette}\'d? But why?\nThis will be a mystery for the rest of my life.```', f'The palette `{palette}` could not be found. Perhaps you mean `palette_{palette}`?', 'nah', f'Let\'s Go {palette}ing!', f'Sorry, but {palette} is at {user}\'s house.', f'Looks like {user} is {palette}\'s biggest fan.']
-                return await ctx.error(random.choice(errormess))
+                return await ctx.error(f"my face when {palette} doesnt exist:")
             palette, color = "default", palette
         if color is not None:
             r, g, b, _ = Color.parse(Tile(name="<palette command>", palette=palette), p_cache, color)
@@ -472,7 +470,7 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
             pal_img.save(buf, format="PNG")
             buf.seek(0)
             file = discord.File(buf, filename=f"{palette[:16]}.png")
-            await ctx.reply(f"Palette `{palette[:16]}` is right over here!", file=file)
+            await ctx.reply(f"the palette `{palette[:16]}` is right over here!", file=file)
 
     @commands.cooldown(5, 8, type=commands.BucketType.channel)
     @commands.command(name="background", aliases=['bg'])
@@ -481,7 +479,7 @@ class UtilityCommandsCog(commands.Cog, name="Utility Commands"):
         b_cache = self.bot.renderer.bg_cache
         img = b_cache.get(bg, None)
         if img is None:
-            return await ctx.error(f'Background {bg} OFFSETTED out of the database, which means that it doesn\'t exist. (Huge props to <@824390281720889374> for making this joke back when RIC\'s =pal command wasn\'t codeblocked, this wouldn\'t have existed without them!)')
+            return await ctx.error(f'the background {bg} offsetted out of the database, which means that it doesnt exist! (huge props to <@824390281720889374> for making this joke back when rics =pal command wasnt codeblocked, this wouldnt have existed without them!)')
         buf = BytesIO()
         img.save(buf, format="PNG")
         buf.seek(0)

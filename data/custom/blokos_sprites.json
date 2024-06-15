@@ -52,5 +52,14 @@
             "3"
         ],
         "tiling": "-1"
+    },
+    {
+        "name": "text_offsetguy",
+        "sprite": "text_offsetguy",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
     }
 ]

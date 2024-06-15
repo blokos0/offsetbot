@@ -44,27 +44,48 @@ class OwnerCog(commands.Cog, name="Admin", command_attrs=dict(hidden=True)):
 
     @commands.command()
     @commands.is_owner()
+    async def servers(self, ctx: Context):
+        """Outputs all of the servers the bot is in."""
+        str = ""
+        for i in self.bot.guilds:
+            str += f"{i.name} ({i.id})\n"
+        await ctx.send(str)
+
+    @commands.command()
+    @commands.is_owner()
+    async def leave(self, ctx: Context, guild_name):
+        """Leaves a certain server."""
+        guild = discord.utils.get(self.bot.guilds, name = guild_name)
+        if guild is None:
+            await ctx.send("idk that server:boom:")
+            return
+        await guild.leave()
+        await ctx.send(f"i left {guild.name}:tada:")
+
+    @commands.command()
+    @commands.is_owner()
     async def lockdown(self, ctx: Context, *, reason: str = ''):
         """Toggles owner-only mode."""
         assert self.bot.config['owner_only_mode'][0] or len(
             reason), 'Specify a reason.'
         self.bot.config['owner_only_mode'] = [
             not self.bot.config['owner_only_mode'][0], reason]
-        await ctx.send(f'Toggled lockdown mode o{"n" if self.bot.config["owner_only_mode"][0] else "ff"}.')
+        await ctx.send(f'the lockdown is o{"n" if self.bot.config["owner_only_mode"][0] else "ff"}:pensive:')
 
-    @commands.command(aliases=["rekiad", "relaod", "reloa", "re;pad", "relad", "reolad", "rr"])
+    @commands.command(aliases=["rekiad", "relaod", "reloa", "re;pad", "relad", "reolad", "rr", "rs"])
     @commands.is_owner()
     async def reload(self, ctx: Context, cog: str = ""):
         """Reloads extensions within the bot while the bot is running."""
+        await self.bot.tree.sync()
         if not cog:
             extensions = [a for a in self.bot.extensions.keys()]
             await asyncio.gather(*((self.bot.reload_extension(extension)) for extension in extensions))
-            await ctx.send("Reloaded all extensions.")
+            await ctx.send("reloaded all extensions:tada:")
         elif "src.cogs." + cog in self.bot.extensions.keys():
             await self.bot.reload_extension("src.cogs." + cog)
-            await ctx.send(f"Reloaded extension `{cog}` from `src/cogs/{cog}.py`.")
+            await ctx.send(f"reloaded extension {cog} from src/cogs/{cog}.py:tada:")
         else:
-            await ctx.send("Unknown extension provided.")
+            await ctx.send(f"theres no extension called {cog}!!!")
             return None
 
     @commands.command()
@@ -391,7 +412,7 @@ class OwnerCog(commands.Cog, name="Admin", command_attrs=dict(hidden=True)):
         await self.load_custom_tiles()
         await ctx.send(f"Added {name} from bab.")
 
-    @commands.command(aliases=["kill", "defeat", "boom", "reboot", "rs"])
+    @commands.command(aliases=["kill", "defeat", "boom", "reboot"])
     @commands.is_owner()
     async def logout(self, ctx: Context):
         """Kills the bot process."""
@@ -425,13 +446,6 @@ class OwnerCog(commands.Cog, name="Admin", command_attrs=dict(hidden=True)):
         await self.load_editor_tiles()
         self.bot.loading = False
         return await ctx.send("Done. Loaded editor tile data.")
-
-    @commands.command()
-    @commands.is_owner()
-    async def refreshslash(self, ctx: Context):
-        async with ctx.typing():
-            await self.bot.tree.sync()
-            await ctx.send("Done.")
 
     @commands.command()
     @commands.is_owner()
