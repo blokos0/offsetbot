@@ -16,5 +16,14 @@
             "3"
         ],
         "tiling": "-1"
+    },
+    {
+        "name": "iwuk",
+        "sprite": "iwuk",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
     }
 ]

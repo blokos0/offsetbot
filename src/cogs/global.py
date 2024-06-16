@@ -36,6 +36,7 @@ from .. import constants, errors
 from ..db import CustomLevelData, LevelData
 from ..types import Bot, Context, RegexDict
 
+import random
 
 def try_index(string: str, value: str) -> int:
     """Returns the index of a substring within a string.
@@ -493,7 +494,8 @@ class GlobalCog(commands.Cog, name="Baba Is You"):
                 prefix = ""
             else:
                 prefix = ctx.message.content.split(' ', 1)[0] + " "
-            description = f"{'||' if spoiler else ''}\n``{prefix}{old_tiles}\n``{'||' if spoiler else ''}"
+            description = random.choice(["heres your render!", "", "the thing", ":boom:", "fun fact: i will explode in 12 minutes!"])
+            description += f"{'||' if spoiler else ''}\n``{prefix}{old_tiles}\n``{'||' if spoiler else ''}"
             if render_ctx.do_embed:
                 embed = discord.Embed(color=self.bot.embed_color)
 

@@ -123,7 +123,7 @@ class Bot(commands.Bot):
             for (name, value, description, author) in await cur.fetchall():
                 self.macros[name] = Macro(value, description, author)
         print(f"Logged in as {self.user}!")
-        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="OFFSET's OST..."))
+        await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="OFFSETS OST..."))
 
     async def is_owner(self, user: discord.User):
         if user.id == 1245516600405393469:  # Implement your own conditions here

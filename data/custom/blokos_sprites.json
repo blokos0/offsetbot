@@ -61,5 +61,23 @@
             "3"
         ],
         "tiling": "-1"
+    },
+    {
+        "name": "offbaba",
+        "sprite": "offbaba",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
+    },
+    {
+        "name": "overexaggeratedexample",
+        "sprite": "overexaggeratedexample",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
     }
 ]

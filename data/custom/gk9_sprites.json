@@ -27,15 +27,6 @@
         "tiling": "-1"
     },
     {
-        "name": "iwuk",
-        "sprite": "iwuk",
-        "color": [
-            "0",
-            "3"
-        ],
-        "tiling": "-1"
-    },
-    {
         "name": "tesho",
         "sprite": "tesho",
         "color": [
@@ -101,6 +92,24 @@
     {
         "name": "tesffograd",
         "sprite": "tesffograd",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
+    },
+    {
+        "name": "jk8",
+        "sprite": "jk8",
+        "color": [
+            "0",
+            "3"
+        ],
+        "tiling": "-1"
+    },
+    {
+        "name": "8kj",
+        "sprite": "8kj",
         "color": [
             "0",
             "3"
